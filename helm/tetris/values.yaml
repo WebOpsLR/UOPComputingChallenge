@@ -1,0 +1,31 @@
+# Default values for the tetris chart.
+
+# Number of application replicas to run.
+replicaCount: 1
+
+image:
+  # The Docker image to deploy. bsord/tetris serves the game on port 80.
+  repository: bsord/tetris
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+# The container port the application listens on. bsord/tetris uses port 80.
+containerPort: 80
+
+service:
+  # NodePort makes the app reachable from outside the cluster, which is
+  # convenient for minikube (via `minikube service`).
+  type: NodePort
+  # The port the Service exposes inside the cluster.
+  port: 80
+  # The port exposed on each node (must be in the 30000-32767 range).
+  nodePort: 30080
+
+# Resource requests/limits keep the pod friendly on a laptop-sized cluster.
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 250m
+    memory: 128Mi
