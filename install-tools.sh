@@ -40,6 +40,10 @@ esac
 
 OS="$(uname -s)"
 
+# Directory this script lives in — this is the challenge folder, and where the
+# Terraform config and Helm chart live. Used to clean up Windows artefacts.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 # Detect Windows Subsystem for Linux. On WSL, Docker comes from Docker Desktop
 # on Windows rather than being installed in the distro.
 IS_WSL=false
@@ -117,6 +121,27 @@ require_root() {
     err "This script must be run as root on Linux/WSL."
     err "Re-run with sudo:  sudo ./install-tools.sh"
     exit 1
+  fi
+}
+
+# WINDOWS ARTEFACT CLEANUP
+
+# When files are downloaded on Windows (e.g. the challenge ZIP), Windows attaches
+# a "mark of the web" as an NTFS alternate data stream. Copying those files into
+# WSL flattens each stream into a real file named '<file>:Zone.Identifier'.
+# Helm then tries to parse these as YAML templates and fails with
+# "control characters are not allowed", breaking 'terraform apply'.
+# Cloning with git avoids this; here we clean up the ZIP-download case so the
+# Terraform/Helm steps don't hit it later.
+clean_zone_identifier() {
+  local found
+  found="$(find "$SCRIPT_DIR" -type f -name '*:Zone.Identifier' 2>/dev/null || true)"
+  if [ -n "$found" ]; then
+    local count
+    count="$(printf '%s\n' "$found" | grep -c . || true)"
+    log "Removing $count Windows 'Zone.Identifier' file(s) that would break Helm..."
+    find "$SCRIPT_DIR" -type f -name '*:Zone.Identifier' -delete 2>/dev/null || true
+    ok "Cleaned up Windows download artefacts."
   fi
 }
 
@@ -435,6 +460,10 @@ run_installs_mac() {
 
 main() {
   require_root
+
+  # Remove Windows Zone.Identifier files before anything else, so the later
+  # Terraform/Helm steps don't trip over them.
+  clean_zone_identifier
 
   local env_label="$OS"
   [ "$IS_WSL" = true ] && env_label="Windows/WSL ($OS)"
