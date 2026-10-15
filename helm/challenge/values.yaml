@@ -1,0 +1,40 @@
+# EDIT VALUES IN THIS FILE
+
+# Number of application replicas to run.
+replicaCount: 1
+
+image:
+  # TODO: 
+  # Replace the whole value with your chosen Docker image name. Example: bsord/tetris
+  repository: docker-hub-image
+  # TODO: 
+  # Replace the whole value with the image's tag (if you're unsure set this to "latest")
+  tag: image-tag
+  pullPolicy: IfNotPresent
+
+# TODO: 
+# Set this to the port your chosen image listens on inside the container.
+# The Docker hub page will tell you this i.g. docker run -d -p 80:CONTAINER_PORT ...
+containerPort: 9999
+
+service:
+  # NodePort makes the app reachable from outside the cluster.
+  type: NodePort
+  # TODO: 
+  # Set this to the port the Service exposes inside the cluster.
+  # The Docker hub page will tell you this i.g. docker run -d -p SERVICE_PORT:80 ...
+  port: 8888
+  # TODO: 
+  # Set this to the port exposed on your machine. 
+  # Must be a number in the 30000-32767 range. e.g. 30080
+  nodePort: 00000
+
+# Resource requests/limits keep the pod friendly on a laptop-sized cluster.
+# Some images will need more so if your service is crashing check it's requirements
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 250m
+    memory: 128Mi

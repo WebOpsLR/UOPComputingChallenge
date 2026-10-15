@@ -6,6 +6,8 @@
 crash.log
 *.tfvars
 !example.tfvars
+# terraform.tfvars ships with the challenge for users to fill in.
+!terraform.tfvars
 override.tf
 override.tf.json
 *_override.tf
